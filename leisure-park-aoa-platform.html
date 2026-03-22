@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Leisure Park AOA — Digital Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --indigo-50: #eef2ff; --indigo-100: #e0e7ff; --indigo-200: #c7d2fe;
+    --indigo-400: #818cf8; --indigo-500: #6366f1; --indigo-600: #4f46e5;
+    --indigo-700: #4338ca; --indigo-800: #3730a3; --indigo-900: #312e81;
+    --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+    --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280;
+    --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937;
+    --gray-900: #111827;
+    --green-400: #4ade80; --green-500: #22c55e; --green-600: #16a34a;
+    --amber-400: #fbbf24; --amber-500: #f59e0b;
+    --red-400: #f87171; --red-500: #ef4444;
+    --blue-500: #3b82f6; --teal-500: #14b8a6;
+    --sidebar-w: 240px;
+    --topbar-h: 60px;
+    --radius: 1rem;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-50); color: var(--gray-800); font-size: 14px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--gray-100); }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+  /* ══════════════════════════════════════════
+     PUBLIC SITE
+  ══════════════════════════════════════════ */
+  #public-site { display: block; }
+  #admin-app   { display: none; }
+
+  /* ── Top Navigation (public) ── */
+  .pub-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    background: rgba(15,15,30,0.88); backdrop-filter: blur(12px);
+    height: 64px; display: flex; align-items: center;
+    padding: 0 2rem; gap: 2rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .pub-nav .logo {
+    font-size: 1.1rem; font-weight: 700; color: #fff;
+    display: flex; align-items: center; gap: .5rem; text-decoration: none;
+  }
+  .pub-nav .logo span { color: var(--indigo-400); }
+  .pub-nav ul { display: flex; gap: 1.5rem; list-style: none; margin-left: auto; }
+  .pub-nav ul a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .875rem; transition: color .2s; }
+  .pub-nav ul a:hover { color: #fff; }
+  .pub-nav .btn-portal {
+    margin-left: 1rem; padding: .5rem 1.25rem;
+    background: var(--indigo-600); color: #fff; border: none;
+    border-radius: 2rem; font-size: .875rem; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .pub-nav .btn-portal:hover { background: var(--indigo-700); }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative; height: 100vh; min-height: 600px;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .hero-slides { position: absolute; inset: 0; }
+  .hero-slide {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1.2s ease;
+  }
+  .hero-slide.active { opacity: 1; }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, rgba(10,10,30,.72) 0%, rgba(30,30,60,.5) 60%, rgba(10,10,30,.8) 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2; text-align: center;
+    color: #fff; max-width: 760px; padding: 2rem;
+  }
+  .hero-badge {
+    display: inline-block; padding: .35rem 1rem;
+    background: rgba(99,102,241,.35); border: 1px solid rgba(99,102,241,.5);
+    border-radius: 2rem; font-size: .75rem; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1.25rem;
+    color: var(--indigo-200);
+  }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.15; margin-bottom: 1rem; }
+  .hero h1 span { color: var(--indigo-400); }
+  .hero p { font-size: 1.1rem; color: rgba(255,255,255,.78); margin-bottom: 2rem; line-height: 1.6; }
+  .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    padding: .75rem 2rem; background: var(--indigo-600); color: #fff;
+    border: none; border-radius: 2rem; font-size: .95rem; font-weight: 600;
+    cursor: pointer; transition: all .2s; box-shadow: 0 4px 14px rgba(99,102,241,.4);
+  }
+  .btn-primary:hover { background: var(--indigo-700); transform: translateY(-1px); }
+  .btn-outline {
+    padding: .75rem 2rem; background: transparent; color: #fff;
+    border: 2px solid rgba(255,255,255,.45); border-radius: 2rem;
+    font-size: .95rem; font-weight: 600; cursor: pointer; transition: all .2s;
+  }
+  .btn-outline:hover { background: rgba(255,255,255,.1); }
+  .hero-scroll {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    z-index: 2; display: flex; flex-direction: column; align-items: center;
+    gap: .5rem; color: rgba(255,255,255,.5); font-size: .75rem;
+    animation: bounce 2s infinite;
+  }
+  .hero-scroll svg { width: 24px; height: 24px; }
+  @keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+
+  /* Slide dots */
+  .hero-dots {
+    position: absolute; bottom: 4.5rem; left: 50%; transform: translateX(-50%);
+    z-index: 3; display: flex; gap: .5rem;
+  }
+  .hero-dot {
+    width: 8px; height: 8px; border-radius: 4px;
+    background: rgba(255,255,255,.4); border: none; cursor: pointer;
+    transition: all .3s;
+  }
+  .hero-dot.active { background: #fff; width: 22px; }
+
+  /* ── Stat Strip ── */
+  .stat-strip {
+    background: var(--indigo-900); padding: 1.5rem 2rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.5rem; text-align: center;
+  }
+  .stat-strip-item { color: #fff; }
+  .stat-strip-item .val { font-size: 1.75rem; font-weight: 800; color: var(--indigo-300); }
+  .stat-strip-item .lbl { font-size: .75rem; color: rgba(255,255,255,.6); margin-top: .25rem; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* ── Section Layout ── */
+  .section { padding: 5rem 2rem; }
+  .section-alt { background: var(--gray-100); }
+  .section-dark { background: var(--indigo-900); color: #fff; }
+  .section-center { text-align: center; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .section-label {
+    font-size: .75rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--indigo-500); margin-bottom: .5rem;
+  }
+  .section-dark .section-label { color: var(--indigo-300); }
+  .section-title { font-size: clamp(1.5rem,3vw,2.25rem); font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+  .section-dark .section-title { color: #fff; }
+  .section-sub { color: var(--gray-500); max-width: 600px; line-height: 1.7; }
+  .section-center .section-sub { margin: 0 auto 3rem; }
+  .section-dark .section-sub { color: rgba(255,255,255,.65); }
+
+  /* ── Amenities Grid ── */
+  .amenities-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .amenity-card {
+    background: #fff; border-radius: var(--radius); padding: 1.5rem;
+    box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: .75rem;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .amenity-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .amenity-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: var(--indigo-50); display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+  }
+  .amenity-card h3 { font-size: .9rem; font-weight: 700; color: var(--gray-800); }
+  .amenity-card p { font-size: .78rem; color: var(--gray-500); line-height: 1.5; }
+
+  /* ── Gallery ── */
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 260px 200px; gap: 1rem; margin-top: 2.5rem; }
+  .gallery-item { border-radius: var(--radius); overflow: hidden; position: relative; cursor: pointer; }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .gallery-item:hover img { transform: scale(1.05); }
+  .gallery-item.tall { grid-row: span 2; }
+  .gallery-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.6), transparent);
+    opacity: 0; transition: opacity .3s;
+    display: flex; align-items: flex-end; padding: 1rem;
+    color: #fff; font-weight: 600; font-size: .875rem;
+  }
+  .gallery-item:hover .gallery-overlay { opacity: 1; }
+
+  /* ── Notices Board ── */
+  .notices-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+  .notice-card {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--radius); padding: 1.25rem 1.5rem;
+  }
+  .notice-badge {
+    display: inline-block; padding: .2rem .7rem; border-radius: 2rem;
+    font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .75rem;
+  }
+  .badge-urgent { background: rgba(239,68,68,.25); color: #fca5a5; }
+  .badge-info   { background: rgba(99,102,241,.25); color: var(--indigo-200); }
+  .badge-event  { background: rgba(34,197,94,.25); color: #86efac; }
+  .notice-card h3 { font-size: .9rem; font-weight: 700; color: #fff; margin-bottom: .35rem; }
+  .notice-card p  { font-size: .8rem; color: rgba(255,255,255,.62); line-height: 1.55; }
+  .notice-card .date { font-size: .72rem; color: rgba(255,255,255,.35); margin-top: .75rem; }
+
+  /* ── Contact / CTA ── */
+  .cta-box {
+    background: linear-gradient(135deg, var(--indigo-600) 0%, var(--indigo-800) 100%);
+    border-radius: 1.5rem; padding: 3.5rem 2rem; text-align: center; color: #fff;
+    box-shadow: 0 8px 32px rgba(79,70,229,.35);
+  }
+  .cta-box h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: .75rem; }
+  .cta-box p  { color: rgba(255,255,255,.75); margin-bottom: 2rem; }
+
+  /* ── Footer ── */
+  .pub-footer {
+    background: var(--gray-900); color: rgba(255,255,255,.65); padding: 3rem 2rem 1.5rem;
+  }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; max-width: 1200px; margin: 0 auto 2rem; }
+  .footer-grid h4 { color: #fff; font-size: .875rem; font-weight: 700; margin-bottom: 1rem; }
+  .footer-grid p, .footer-grid li { font-size: .8rem; line-height: 1.8; }
+  .footer-grid ul { list-style: none; }
+  .footer-grid a { color: rgba(255,255,255,.55); text-decoration: none; transition: color .2s; }
+  .footer-grid a:hover { color: #fff; }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); padding-top: 1.5rem; text-align: center; font-size: .78rem; max-width: 1200px; margin: 0 auto; }
+
+  /* ══════════════════════════════════════════
+     ADMIN APP
+  ══════════════════════════════════════════ */
+  .app-shell { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-w); min-height: 100vh;
+    background: var(--gray-900); color: #fff;
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    transition: transform .25s;
+  }
+  .sidebar-brand {
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .sidebar-brand h2 { font-size: .95rem; font-weight: 800; color: #fff; }
+  .sidebar-brand span { font-size: .72rem; color: var(--indigo-400); }
+  .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+  .nav-section { padding: .5rem 1rem .25rem; font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.3); }
+  .nav-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .6rem 1.25rem; cursor: pointer; color: rgba(255,255,255,.65);
+    font-size: .85rem; border-left: 3px solid transparent; transition: all .2s;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+  .nav-item.active { background: rgba(99,102,241,.18); color: #fff; border-left-color: var(--indigo-400); }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; background: var(--indigo-600); color: #fff; font-size: .65rem; padding: .15rem .45rem; border-radius: 2rem; font-weight: 700; }
+  .sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .sidebar-user { display: flex; align-items: center; gap: .75rem; }
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--indigo-500), var(--indigo-700));
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .user-info { min-width: 0; }
+  .user-info .name { font-size: .8rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-info .role { font-size: .7rem; color: rgba(255,255,255,.45); }
+
+  /* Topbar */
+  .topbar {
+    position: fixed; top: 0; left: var(--sidebar-w); right: 0;
+    height: var(--topbar-h); z-index: 99;
+    background: #fff; border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center; padding: 0 1.5rem; gap: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  }
+  .topbar-title { font-size: 1rem; font-weight: 700; color: var(--gray-800); flex: 1; }
+  .topbar-search {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--gray-100); border-radius: 2rem;
+    padding: .4rem 1rem; width: 220px;
+  }
+  .topbar-search input { background: none; border: none; outline: none; font-size: .85rem; color: var(--gray-700); width: 100%; }
+  .topbar-search svg { width: 16px; height: 16px; color: var(--gray-400); flex-shrink: 0; }
+  .topbar-actions { display: flex; align-items: center; gap: .75rem; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--gray-100); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-600); position: relative; transition: background .2s;
+  }
+  .icon-btn:hover { background: var(--gray-200); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red-500); border: 2px solid #fff;
+  }
+  .btn-back-pub {
+    padding: .4rem 1rem; background: var(--indigo-600); color: #fff;
+    border: none; border-radius: 2rem; font-size: .8rem; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-back-pub:hover { background: var(--indigo-700); }
+
+  /* Main content */
+  .main-content {
+    margin-left: var(--sidebar-w); margin-top: var(--topbar-h);
+    flex: 1; padding: 1.75rem; overflow-x: hidden;
+  }
+
+  /* Pages */
+  .page { display: none; animation: fadeIn .3s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Page header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
+  .page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--gray-900); }
+  .page-header p  { font-size: .85rem; color: var(--gray-500); margin-top: .25rem; }
+
+  /* KPI Grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 1.25rem; margin-bottom: 1.75rem; }
+  .kpi-card {
+    background: #fff; border-radius: var(--radius); padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+    display: flex; flex-direction: column; gap: .75rem;
+  }
+  .kpi-header { display: flex; align-items: center; justify-content: space-between; }
+  .kpi-label { font-size: .78rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .05em; }
+  .kpi-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  }
+  .kpi-val { font-size: 1.75rem; font-weight: 800; color: var(--gray-900); }
+  .kpi-delta { display: flex; align-items: center; gap: .3rem; font-size: .75rem; font-weight: 600; }
+  .delta-up   { color: var(--green-600); }
+  .delta-down { color: var(--red-500); }
+
+  /* Chart cards */
+  .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.75rem; }
+  .chart-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.75rem; }
+  .card {
+    background: #fff; border-radius: var(--radius); padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+  }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .card-title { font-size: .95rem; font-weight: 700; color: var(--gray-800); }
+  .card-subtitle { font-size: .78rem; color: var(--gray-400); margin-top: .15rem; }
+  .card-action { font-size: .78rem; color: var(--indigo-600); cursor: pointer; font-weight: 600; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { padding: .75rem 1rem; text-align: left; font-size: .72rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .05em; border-bottom: 2px solid var(--gray-100); background: var(--gray-50); }
+  tbody td { padding: .85rem 1rem; font-size: .85rem; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--gray-50); }
+
+  /* Status badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .25rem .7rem; border-radius: 2rem;
+    font-size: .72rem; font-weight: 700;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge-green  { background: #dcfce7; color: #15803d; }
+  .badge-green  .badge-dot { background: #22c55e; }
+  .badge-amber  { background: #fef9c3; color: #a16207; }
+  .badge-amber  .badge-dot { background: #eab308; }
+  .badge-red    { background: #fee2e2; color: #b91c1c; }
+  .badge-red    .badge-dot { background: #ef4444; }
+  .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+  .badge-blue   .badge-dot { background: #3b82f6; }
+  .badge-gray   { background: var(--gray-100); color: var(--gray-600); }
+  .badge-gray   .badge-dot { background: var(--gray-400); }
+  .badge-indigo { background: var(--indigo-50); color: var(--indigo-700); }
+  .badge-indigo .badge-dot { background: var(--indigo-500); }
+
+  /* Progress bar */
+  .progress-bar { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; margin-top: .35rem; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--indigo-500); transition: width .6s; }
+
+  /* Avatar stack */
+  .avatar-stack { display: flex; }
+  .avatar-stack .av {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--indigo-500); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; font-weight: 700;
+    border: 2px solid #fff; margin-left: -6px;
+  }
+  .avatar-stack .av:first-child { margin-left: 0; }
+
+  /* Attraction & Staff cards */
+  .cards-grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 1.25rem; }
+  .feature-card {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--shadow); border: 1px solid var(--gray-100); overflow: hidden;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .feature-card-img { height: 160px; width: 100%; object-fit: cover; }
+  .feature-card-img-placeholder {
+    height: 160px; background: var(--gray-100);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+  }
+  .feature-card-body { padding: 1.1rem 1.25rem; }
+  .feature-card h3 { font-size: .95rem; font-weight: 700; color: var(--gray-900); margin-bottom: .35rem; }
+  .feature-card p  { font-size: .8rem; color: var(--gray-500); line-height: 1.55; margin-bottom: .85rem; }
+  .feature-card-meta { display: flex; align-items: center; justify-content: space-between; }
+
+  /* Staff card */
+  .staff-card {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--shadow); border: 1px solid var(--gray-100);
+    padding: 1.25rem; display: flex; align-items: center; gap: 1rem;
+    transition: transform .2s;
+  }
+  .staff-card:hover { transform: translateY(-2px); }
+  .staff-avatar {
+    width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--indigo-500), var(--indigo-700));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; font-weight: 700; color: #fff;
+  }
+  .staff-info { flex: 1; min-width: 0; }
+  .staff-info h3 { font-size: .9rem; font-weight: 700; color: var(--gray-900); }
+  .staff-info .role { font-size: .78rem; color: var(--gray-500); margin-top: .1rem; }
+  .staff-meta { display: flex; gap: .5rem; margin-top: .5rem; align-items: center; flex-wrap: wrap; }
+
+  /* Ops timeline */
+  .timeline { list-style: none; }
+  .timeline li {
+    position: relative; padding: 0 0 1.25rem 2rem;
+    border-left: 2px solid var(--gray-200);
+  }
+  .timeline li:last-child { border-left-color: transparent; }
+  .timeline-dot {
+    position: absolute; left: -7px; top: 2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--indigo-500); border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--indigo-200);
+  }
+  .timeline-dot.red   { background: var(--red-500); box-shadow: 0 0 0 2px #fecaca; }
+  .timeline-dot.green { background: var(--green-500); box-shadow: 0 0 0 2px #bbf7d0; }
+  .timeline-dot.amber { background: var(--amber-500); box-shadow: 0 0 0 2px #fde68a; }
+  .timeline-time { font-size: .72rem; color: var(--gray-400); margin-bottom: .2rem; }
+  .timeline-text { font-size: .84rem; color: var(--gray-700); }
+  .timeline-text strong { color: var(--gray-900); }
+
+  /* Heatmap cells */
+  .heatmap-grid { display: grid; grid-template-columns: 40px repeat(7, 1fr); gap: 4px; }
+  .heatmap-cell {
+    height: 28px; border-radius: 4px; display: flex;
+    align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 600; cursor: pointer;
+  }
+  .heatmap-label { font-size: .7rem; color: var(--gray-400); display: flex; align-items: center; justify-content: center; }
+  .h0 { background: var(--gray-100); color: var(--gray-400); }
+  .h1 { background: var(--indigo-100); color: var(--indigo-600); }
+  .h2 { background: var(--indigo-200); color: var(--indigo-700); }
+  .h3 { background: var(--indigo-400); color: #fff; }
+  .h4 { background: var(--indigo-600); color: #fff; }
+
+  /* Donut legend */
+  .donut-legend { margin-top: .75rem; display: flex; flex-direction: column; gap: .5rem; }
+  .donut-legend-item { display: flex; align-items: center; gap: .6rem; font-size: .8rem; color: var(--gray-600); }
+  .donut-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Alert boxes */
+  .alert {
+    border-radius: .75rem; padding: .85rem 1.1rem;
+    display: flex; gap: .75rem; align-items: flex-start; margin-bottom: .85rem;
+    font-size: .84rem; line-height: 1.5;
+  }
+  .alert svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: .1rem; }
+  .alert-red    { background: #fef2f2; color: #991b1b; border-left: 3px solid var(--red-500); }
+  .alert-amber  { background: #fffbeb; color: #92400e; border-left: 3px solid var(--amber-500); }
+  .alert-green  { background: #f0fdf4; color: #166534; border-left: 3px solid var(--green-500); }
+  .alert-indigo { background: var(--indigo-50); color: var(--indigo-800); border-left: 3px solid var(--indigo-500); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .chart-grid-3 { grid-template-columns: 1fr 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .chart-grid-3 { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .gallery-item.tall { grid-row: span 1; }
+    .sidebar { transform: translateX(-100%); }
+    .main-content { margin-left: 0; }
+    .topbar { left: 0; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .pub-nav ul { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     PUBLIC SITE
+═══════════════════════════════════ -->
+<div id="public-site">
+
+  <!-- Nav -->
+  <nav class="pub-nav" role="navigation" aria-label="Main Navigation">
+    <a href="#" class="logo">🏙️ Leisure Park <span>AOA</span></a>
+    <ul>
+      <li><a href="#amenities">Amenities</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#notices">Notices</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="btn-portal" onclick="openAdmin()">Resident Portal →</button>
+  </nav>
+
+  <!-- Hero Slider -->
+  <section class="hero" aria-label="Hero">
+    <div class="hero-slides">
+      <div class="hero-slide active" style="background-image:url('image/hero.png')"></div>
+      <div class="hero-slide" style="background-image:url('image/img3.png')"></div>
+      <div class="hero-slide" style="background-image:url('image/img5.png')"></div>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">✦ Premium Residential Community — Greater Noida</div>
+      <h1>Welcome to <span>Leisure Park</span><br/>Phase I &amp; II</h1>
+      <p>A landmark gated community blending luxury living with lush green spaces, world-class amenities, and a vibrant community spirit — managed seamlessly by your AOA.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="openAdmin()">Open Resident Portal</button>
+        <button class="btn-outline" onclick="scrollToSection('amenities')">Explore Amenities</button>
+      </div>
+    </div>
+    <div class="hero-dots" role="tablist" aria-label="Slideshow navigation">
+      <button class="hero-dot active" onclick="goSlide(0)" aria-label="Slide 1"></button>
+      <button class="hero-dot" onclick="goSlide(1)" aria-label="Slide 2"></button>
+      <button class="hero-dot" onclick="goSlide(2)" aria-label="Slide 3"></button>
+    </div>
+    <div class="hero-scroll" aria-hidden="true">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      Scroll to explore
+    </div>
+  </section>
+
+  <!-- Stat Strip -->
+  <div class="stat-strip" role="region" aria-label="Key statistics">
+    <div class="stat-strip-item"><div class="val">1,200+</div><div class="lbl">Residential Units</div></div>
+    <div class="stat-strip-item"><div class="val">24/7</div><div class="lbl">Security Surveillance</div></div>
+    <div class="stat-strip-item"><div class="val">18+</div><div class="lbl">Amenities &amp; Facilities</div></div>
+    <div class="stat-strip-item"><div class="val">4.8★</div><div class="lbl">Resident Satisfaction</div></div>
+    <div class="stat-strip-item"><div class="val">2 Phases</div><div class="lbl">PH-I &amp; PH-II</div></div>
+  </div>
+
+  <!-- Amenities -->
+  <section id="amenities" class="section section-alt" aria-labelledby="amenities-title">
+    <div class="container">
+      <div class="section-label">What We Offer</div>
+      <h2 id="amenities-title" class="section-title">World-Class Amenities</h2>
+      <p class="section-sub">Leisure Park offers an unmatched lifestyle with premium amenities designed for every age group and interest.</p>
+      <div class="amenities-grid">
+        <div class="amenity-card"><div class="amenity-icon">🏊</div><h3>Swimming Pool</h3><p>Olympic-size pool with children's section, open year-round.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">🌿</div><h3>Landscaped Gardens</h3><p>2+ acres of manicured green spaces with walking trails.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">🏋️</div><h3>Gymnasium</h3><p>Fully equipped with modern machines and personal trainers.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">🎾</div><h3>Sports Courts</h3><p>Tennis, badminton, and basketball courts for residents.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">👶</div><h3>Children's Zone</h3><p>Safe play area with swings, slides and activity equipment.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">🎭</div><h3>Clubhouse</h3><p>Multi-purpose hall for events, celebrations, and meetings.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">🚗</div><h3>Parking</h3><p>Dedicated basement and surface parking with CCTV coverage.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">🔒</div><h3>24/7 Security</h3><p>Boom barriers, CCTV, and trained security personnel.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">⚡</div><h3>Power Backup</h3><p>100% generator backup for common areas and lifts.</p></div>
+        <div class="amenity-card"><div class="amenity-icon">🌐</div><h3>High-Speed Wi-Fi</h3><p>Fiber optic internet across all common areas.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery" class="section" aria-labelledby="gallery-title">
+    <div class="container">
+      <div class="section-label">Our Community</div>
+      <h2 id="gallery-title" class="section-title">Life at Leisure Park</h2>
+      <p class="section-sub">A glimpse into the beautiful spaces and vibrant lifestyle our residents enjoy every day.</p>
+      <div class="gallery-grid" role="list">
+        <div class="gallery-item tall" role="listitem">
+          <img src="image/img1.png" alt="Leisure Park Gate — entrance at night" loading="lazy"/>
+          <div class="gallery-overlay">Main Entrance Gate</div>
+        </div>
+        <div class="gallery-item" role="listitem">
+          <img src="image/img2.png" alt="Landscaped garden pathways lit at night" loading="lazy"/>
+          <div class="gallery-overlay">Evening Garden Lights</div>
+        </div>
+        <div class="gallery-item" role="listitem">
+          <img src="image/img4.png" alt="Clubhouse and towers illuminated at night" loading="lazy"/>
+          <div class="gallery-overlay">Clubhouse &amp; Towers</div>
+        </div>
+        <div class="gallery-item" role="listitem">
+          <img src="image/img3.png" alt="Aerial view of the towers and pool area at dusk" loading="lazy"/>
+          <div class="gallery-overlay">Pool Area &amp; Towers</div>
+        </div>
+        <div class="gallery-item" role="listitem">
+          <img src="image/img5.png" alt="Green pathways and palm trees during daytime" loading="lazy"/>
+          <div class="gallery-overlay">Garden Walkways</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notices / Announcements -->
+  <section id="notices" class="section section-dark" aria-labelledby="notices-title">
+    <div class="container">
+      <div class="section-label">Community Updates</div>
+      <h2 id="notices-title" class="section-title">Latest Notices &amp; Events</h2>
+      <p class="section-sub section-dark">Stay informed with the latest announcements from your AOA committee.</p>
+      <div class="notices-grid" role="list">
+        <div class="notice-card" role="listitem">
+          <span class="notice-badge badge-urgent">Urgent</span>
+          <h3>Water Supply Shutdown — Maintenance</h3>
+          <p>Water supply will be interrupted on 22nd March 2026, 10 AM–2 PM for pipeline maintenance in Block C &amp; D.</p>
+          <div class="date">📅 Posted: March 20, 2026</div>
+        </div>
+        <div class="notice-card" role="listitem">
+          <span class="notice-badge badge-event">Event</span>
+          <h3>Holi Celebration 2026 🎨</h3>
+          <p>Join us for the community Holi celebration on March 25th at the central garden. Music, snacks, and colors for all!</p>
+          <div class="date">📅 Posted: March 18, 2026</div>
+        </div>
+        <div class="notice-card" role="listitem">
+          <span class="notice-badge badge-info">Notice</span>
+          <h3>Maintenance Charge Collection</h3>
+          <p>Quarterly maintenance dues for Q1 2026 (Jan–Mar) are due by March 31. Please pay via the resident portal or bank transfer.</p>
+          <div class="date">📅 Posted: March 15, 2026</div>
+        </div>
+        <div class="notice-card" role="listitem">
+          <span class="notice-badge badge-event">Meeting</span>
+          <h3>AGM — Annual General Meeting</h3>
+          <p>The Annual General Meeting of Leisure Park AOA will be held on April 5, 2026 at 6 PM in the Clubhouse. All residents requested to attend.</p>
+          <div class="date">📅 Posted: March 10, 2026</div>
+        </div>
+        <div class="notice-card" role="listitem">
+          <span class="notice-badge badge-info">Update</span>
+          <h3>New Security Protocol — Vehicle Entry</h3>
+          <p>Effective April 1, 2026, all visitor vehicles must register at the gate via the ANPR system. Residents to update their vehicle details in the portal.</p>
+          <div class="date">📅 Posted: March 8, 2026</div>
+        </div>
+        <div class="notice-card" role="listitem">
+          <span class="notice-badge badge-event">Health</span>
+          <h3>Free Health Camp — Residents Only</h3>
+          <p>A free health check-up camp (BP, sugar, BMI) will be organized on March 28 at the Clubhouse ground floor, 9 AM–1 PM.</p>
+          <div class="date">📅 Posted: March 5, 2026</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="contact" class="section section-alt">
+    <div class="container">
+      <div class="cta-box" role="region" aria-label="Call to action">
+        <h2>Join the Resident Digital Portal</h2>
+        <p>Pay dues, raise complaints, receive notices, and stay connected with your community — all in one place.</p>
+        <button class="btn-primary" style="font-size:1rem; padding: .85rem 2.5rem;" onclick="openAdmin()">Access Resident Portal →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="pub-footer" role="contentinfo">
+    <div class="footer-grid">
+      <div>
+        <h4>🏙️ Leisure Park AOA</h4>
+        <p>Association of Apartment Owners<br/>Leisure Park Phase I &amp; II<br/>Greater Noida, Uttar Pradesh</p>
+        <p style="margin-top:.75rem;">📞 +91 98765 43210<br/>✉️ aoa@leisurepark.in</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#amenities">Amenities</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#notices">Notices</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Resident Services</h4>
+        <ul>
+          <li><a href="#">Pay Maintenance</a></li>
+          <li><a href="#">Raise Complaint</a></li>
+          <li><a href="#">Book Amenity</a></li>
+          <li><a href="#">Visitor Pass</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>AOA Committee</h4>
+        <ul>
+          <li><a href="#">President's Message</a></li>
+          <li><a href="#">Meeting Minutes</a></li>
+          <li><a href="#">Financial Reports</a></li>
+          <li><a href="#">Bylaws &amp; Rules</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Leisure Park AOA — Powered by AOA Digital Platform &nbsp;|&nbsp; All rights reserved</p>
+    </div>
+  </footer>
+</div><!-- /#public-site -->
+
+
+<!-- ═══════════════════════════════════
+     ADMIN APP
+═══════════════════════════════════ -->
+<div id="admin-app">
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" role="navigation" aria-label="Admin Navigation">
+    <div class="sidebar-brand">
+      <h2>🏙️ Leisure Park AOA</h2>
+      <span>Admin Dashboard</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+      <a class="nav-item active" href="#" onclick="showPage('dashboard',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <div class="nav-section">Community</div>
+      <a class="nav-item" href="#" onclick="showPage('attractions',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        Attractions &amp; Activities
+      </a>
+      <a class="nav-item" href="#" onclick="showPage('visitors',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        Visitor Analytics
+      </a>
+      <a class="nav-item" href="#" onclick="showPage('staff',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Staff &amp; Operations
+        <span class="nav-badge">3</span>
+      </a>
+      <div class="nav-section">Finance</div>
+      <a class="nav-item" href="#" onclick="showPage('finance',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        Finance &amp; Dues
+      </a>
+      <div class="nav-section">Settings</div>
+      <a class="nav-item" href="#" onclick="showPage('notices',this)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        Notices &amp; Alerts
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">SS</div>
+        <div class="user-info">
+          <div class="name">Sumita Sinha</div>
+          <div class="role">AOA Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-search" role="search">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" placeholder="Search residents, units…" aria-label="Search">
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" aria-label="Notifications">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span class="notif-dot"></span>
+      </button>
+      <button class="btn-back-pub" onclick="closeAdmin()">← Public Site</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content" role="main">
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <h1>Good Morning, Sumita 👋</h1>
+          <p>Here's your community overview for <strong>March 21, 2026</strong></p>
+        </div>
+        <button class="btn-primary" style="border-radius:var(--radius);">+ New Notice</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Units</span>
+            <div class="kpi-icon" style="background:#eef2ff;">🏢</div>
+          </div>
+          <div class="kpi-val">1,248</div>
+          <div class="kpi-delta delta-up">↑ 12 new this quarter</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Dues Collected</span>
+            <div class="kpi-icon" style="background:#f0fdf4;">💰</div>
+          </div>
+          <div class="kpi-val">₹18.4L</div>
+          <div class="kpi-delta delta-up">↑ 8.2% vs last quarter</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Open Complaints</span>
+            <div class="kpi-icon" style="background:#fef2f2;">🔧</div>
+          </div>
+          <div class="kpi-val">24</div>
+          <div class="kpi-delta delta-down">↑ 4 new this week</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Visitor Entries</span>
+            <div class="kpi-icon" style="background:#fffbeb;">🚶</div>
+          </div>
+          <div class="kpi-val">342</div>
+          <div class="kpi-delta delta-up">↑ Today's count</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Staff On Duty</span>
+            <div class="kpi-icon" style="background:#f0fdf4;">👷</div>
+          </div>
+          <div class="kpi-val">38</div>
+          <div class="kpi-delta delta-up">↑ Full shift active</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Amenity Bookings</span>
+            <div class="kpi-icon" style="background:#eef2ff;">🏊</div>
+          </div>
+          <div class="kpi-val">67</div>
+          <div class="kpi-delta delta-up">↑ This week</div>
+        </div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Monthly Revenue Collection</div>
+              <div class="card-subtitle">Maintenance dues — 2026</div>
+            </div>
+            <span class="card-action">View Report</span>
+          </div>
+          <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Complaint Categories</div>
+              <div class="card-subtitle">Current open tickets</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="complaintChart"></canvas></div>
+          <div class="donut-legend">
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#6366f1"></div>Electrical (8)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#14b8a6"></div>Plumbing (6)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#f59e0b"></div>Parking (5)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#ef4444"></div>Security (3)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#94a3b8"></div>Others (2)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Recent Complaints</div>
+              <div class="card-subtitle">Last 7 days · 24 open tickets</div>
+            </div>
+            <span class="card-action">See All</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Unit</th><th>Issue</th><th>Category</th><th>Priority</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><strong>A-402</strong></td><td>Water leakage in bathroom</td><td>Plumbing</td><td><span class="badge badge-red"><span class="badge-dot"></span>High</span></td><td><span class="badge badge-amber"><span class="badge-dot"></span>In Progress</span></td></tr>
+                <tr><td><strong>C-105</strong></td><td>Lift malfunction — Floor 3</td><td>Electrical</td><td><span class="badge badge-red"><span class="badge-dot"></span>High</span></td><td><span class="badge badge-amber"><span class="badge-dot"></span>Assigned</span></td></tr>
+                <tr><td><strong>B-710</strong></td><td>Stray dog in parking area</td><td>Security</td><td><span class="badge badge-amber"><span class="badge-dot"></span>Med</span></td><td><span class="badge badge-green"><span class="badge-dot"></span>Resolved</span></td></tr>
+                <tr><td><strong>D-201</strong></td><td>Street light not working</td><td>Electrical</td><td><span class="badge badge-amber"><span class="badge-dot"></span>Med</span></td><td><span class="badge badge-blue"><span class="badge-dot"></span>Pending</span></td></tr>
+                <tr><td><strong>A-308</strong></td><td>Noise complaint — neighbours</td><td>Security</td><td><span class="badge badge-gray"><span class="badge-dot"></span>Low</span></td><td><span class="badge badge-blue"><span class="badge-dot"></span>Pending</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Today's Activity Feed</div>
+              <div class="card-subtitle">Live updates</div>
+            </div>
+          </div>
+          <ul class="timeline">
+            <li><div class="timeline-dot green"></div><div class="timeline-time">09:14 AM</div><div class="timeline-text"><strong>Pool area</strong> cleaning completed ✓</div></li>
+            <li><div class="timeline-dot red"></div><div class="timeline-time">09:02 AM</div><div class="timeline-text">Complaint #C-0421 raised — <strong>A-402</strong></div></li>
+            <li><div class="timeline-dot amber"></div><div class="timeline-time">08:45 AM</div><div class="timeline-text">Generator test run — <strong>Block B</strong></div></li>
+            <li><div class="timeline-dot"></div><div class="timeline-time">08:30 AM</div><div class="timeline-text">Morning shift staff check-in: <strong>38 / 40</strong></div></li>
+            <li><div class="timeline-dot green"></div><div class="timeline-time">08:00 AM</div><div class="timeline-text">Payment received — <strong>Unit D-501</strong> ₹4,500</div></li>
+            <li><div class="timeline-dot"></div><div class="timeline-time">07:15 AM</div><div class="timeline-text">Gate ANPR triggered — <strong>42 vehicles</strong></div></li>
+          </ul>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+    <!-- ── ATTRACTIONS & ACTIVITIES PAGE ── -->
+    <div class="page" id="page-attractions">
+      <div class="page-header">
+        <div>
+          <h1>Attractions &amp; Activities</h1>
+          <p>Manage all amenities, zones, and community activities</p>
+        </div>
+        <button class="btn-primary" style="border-radius:var(--radius);">+ Add Amenity</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Total Amenities</span><div class="kpi-icon" style="background:#eef2ff;">🏙️</div></div><div class="kpi-val">18</div><div class="kpi-delta delta-up">↑ All operational</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Today's Bookings</span><div class="kpi-icon" style="background:#f0fdf4;">📅</div></div><div class="kpi-val">67</div><div class="kpi-delta delta-up">↑ 12% vs yesterday</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Under Maintenance</span><div class="kpi-icon" style="background:#fef2f2;">🔧</div></div><div class="kpi-val">2</div><div class="kpi-delta delta-down">Tennis Court + Gym</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Peak Hour</span><div class="kpi-icon" style="background:#fffbeb;">⏱️</div></div><div class="kpi-val">6–8 PM</div><div class="kpi-delta delta-up">↑ Pool most popular</div></div>
+      </div>
+
+      <div class="alert alert-amber">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div><strong>Scheduled Maintenance:</strong> Tennis Court A will be closed March 22–24 for resurfacing. Notify residents via the portal.</div>
+      </div>
+
+      <div class="cards-grid-3" style="margin-bottom:1.75rem;">
+        <div class="feature-card">
+          <img src="image/img2.png" alt="Garden walkways at night" class="feature-card-img"/>
+          <div class="feature-card-body">
+            <h3>🌿 Landscaped Gardens</h3>
+            <p>2+ acres of manicured green spaces with walking trails, seating zones, and palm-lined pathways.</p>
+            <div class="feature-card-meta">
+              <span class="badge badge-green"><span class="badge-dot"></span>Open</span>
+              <span style="font-size:.78rem;color:var(--gray-500);">6 AM – 10 PM</span>
+            </div>
+            <div style="margin-top:.75rem;">
+              <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--gray-500);">
+                <span>Today's footfall</span><span>184 residents</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:72%;background:#22c55e;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-img-placeholder">🏊</div>
+          <div class="feature-card-body">
+            <h3>🏊 Swimming Pool</h3>
+            <p>Olympic-size main pool + children's pool with lifeguard on duty. Booking required for peak slots.</p>
+            <div class="feature-card-meta">
+              <span class="badge badge-green"><span class="badge-dot"></span>Open</span>
+              <span style="font-size:.78rem;color:var(--gray-500);">6 AM – 9 PM</span>
+            </div>
+            <div style="margin-top:.75rem;">
+              <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--gray-500);">
+                <span>Capacity utilisation</span><span>62%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:62%;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <img src="image/img4.png" alt="Clubhouse exterior at night" class="feature-card-img"/>
+          <div class="feature-card-body">
+            <h3>🎭 Clubhouse &amp; Hall</h3>
+            <p>Multi-purpose hall (capacity 200), banquet area, indoor games room, and lounge space.</p>
+            <div class="feature-card-meta">
+              <span class="badge badge-green"><span class="badge-dot"></span>Open</span>
+              <span style="font-size:.78rem;color:var(--gray-500);">8 AM – 11 PM</span>
+            </div>
+            <div style="margin-top:.75rem;">
+              <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--gray-500);">
+                <span>Bookings this week</span><span>14 events</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:85%;background:#f59e0b;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-img-placeholder">🏋️</div>
+          <div class="feature-card-body">
+            <h3>🏋️ Gymnasium</h3>
+            <p>Fully-equipped gym with cardio machines, free weights, yoga area, and personal trainers available.</p>
+            <div class="feature-card-meta">
+              <span class="badge badge-amber"><span class="badge-dot"></span>Maintenance</span>
+              <span style="font-size:.78rem;color:var(--gray-500);">Resumes Mar 23</span>
+            </div>
+            <div style="margin-top:.75rem;">
+              <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--gray-500);">
+                <span>Avg daily users</span><span>56 residents</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:56%;background:#94a3b8;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-img-placeholder">🎾</div>
+          <div class="feature-card-body">
+            <h3>🎾 Sports Courts</h3>
+            <p>2 tennis courts, 2 badminton courts, 1 basketball court. Online slot booking available.</p>
+            <div class="feature-card-meta">
+              <span class="badge badge-red"><span class="badge-dot"></span>Partial Closure</span>
+              <span style="font-size:.78rem;color:var(--gray-500);">1 court open</span>
+            </div>
+            <div style="margin-top:.75rem;">
+              <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--gray-500);">
+                <span>Bookings today</span><span>22 slots</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:44%;background:#ef4444;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <img src="image/img5.png" alt="Garden pathways daytime" class="feature-card-img"/>
+          <div class="feature-card-body">
+            <h3>👶 Children's Zone</h3>
+            <p>Safe dedicated play area with swings, slides, sand pit, and shaded seating for parents.</p>
+            <div class="feature-card-meta">
+              <span class="badge badge-green"><span class="badge-dot"></span>Open</span>
+              <span style="font-size:.78rem;color:var(--gray-500);">All day</span>
+            </div>
+            <div style="margin-top:.75rem;">
+              <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--gray-500);">
+                <span>Today's visitors</span><span>78 children</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:78%;background:#22c55e;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Events Table -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Upcoming Community Events</div><div class="card-subtitle">Next 30 days</div></div>
+          <span class="card-action">+ Schedule Event</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Event</th><th>Date</th><th>Venue</th><th>Capacity</th><th>Registrations</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>🎨 Holi Celebration</strong></td><td>Mar 25, 2026</td><td>Central Garden</td><td>Unlimited</td><td>482 residents</td><td><span class="badge badge-green"><span class="badge-dot"></span>Confirmed</span></td></tr>
+              <tr><td><strong>🏃 Morning Walkathon</strong></td><td>Mar 28, 2026</td><td>Garden Track</td><td>200</td><td>156 registered</td><td><span class="badge badge-indigo"><span class="badge-dot"></span>Open</span></td></tr>
+              <tr><td><strong>🏥 Free Health Camp</strong></td><td>Mar 28, 2026</td><td>Clubhouse GF</td><td>300</td><td>89 registered</td><td><span class="badge badge-indigo"><span class="badge-dot"></span>Open</span></td></tr>
+              <tr><td><strong>📋 Annual General Meeting</strong></td><td>Apr 5, 2026</td><td>Clubhouse Hall</td><td>200</td><td>–</td><td><span class="badge badge-amber"><span class="badge-dot"></span>Planned</span></td></tr>
+              <tr><td><strong>🎭 Navratri Cultural Night</strong></td><td>Apr 10, 2026</td><td>Club Lawn</td><td>500</td><td>–</td><td><span class="badge badge-amber"><span class="badge-dot"></span>Planned</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /attractions -->
+
+    <!-- ── VISITOR ANALYTICS PAGE ── -->
+    <div class="page" id="page-visitors">
+      <div class="page-header">
+        <div>
+          <h1>Visitor Analytics</h1>
+          <p>Footfall, peak hours, resident activity, and entry/exit trends</p>
+        </div>
+        <button class="btn-primary" style="border-radius:var(--radius);">Export Report</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Today's Visitors</span><div class="kpi-icon" style="background:#eef2ff;">🚶</div></div><div class="kpi-val">342</div><div class="kpi-delta delta-up">↑ 18% vs yesterday</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Vehicle Entries</span><div class="kpi-icon" style="background:#f0fdf4;">🚗</div></div><div class="kpi-val">187</div><div class="kpi-delta delta-up">↑ Peak: 8–9 AM</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Delivery Agents</span><div class="kpi-icon" style="background:#fffbeb;">📦</div></div><div class="kpi-val">54</div><div class="kpi-delta delta-up">↑ 8 currently inside</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Pre-approved Passes</span><div class="kpi-icon" style="background:#f0fdf4;">✅</div></div><div class="kpi-val">28</div><div class="kpi-delta delta-up">↑ Today issued</div></div>
+      </div>
+
+      <!-- Visitor Heatmap -->
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Visitor Trend — Last 30 Days</div><div class="card-subtitle">Daily footfall</div></div>
+          </div>
+          <div class="chart-wrap"><canvas id="visitorChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Entry Type Breakdown</div><div class="card-subtitle">Today</div></div>
+          </div>
+          <div class="chart-wrap"><canvas id="entryTypeChart"></canvas></div>
+          <div class="donut-legend">
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#6366f1"></div>Residents (1,248)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#14b8a6"></div>Guests (187)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#f59e0b"></div>Delivery (54)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#94a3b8"></div>Service Staff (101)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hourly heatmap -->
+      <div class="card" style="margin-bottom:1.75rem;">
+        <div class="card-header">
+          <div><div class="card-title">Hourly Footfall Heatmap</div><div class="card-subtitle">This week — visitor density by hour and day</div></div>
+        </div>
+        <div class="heatmap-grid" style="margin-top:.5rem;" role="table" aria-label="Footfall heatmap">
+          <div class="heatmap-label"></div>
+          <div class="heatmap-label">Mon</div><div class="heatmap-label">Tue</div><div class="heatmap-label">Wed</div>
+          <div class="heatmap-label">Thu</div><div class="heatmap-label">Fri</div><div class="heatmap-label">Sat</div><div class="heatmap-label">Sun</div>
+          <div class="heatmap-label">6 AM</div> <div class="heatmap-cell h2">32</div><div class="heatmap-cell h2">28</div><div class="heatmap-cell h3">41</div><div class="heatmap-cell h2">35</div><div class="heatmap-cell h3">45</div><div class="heatmap-cell h4">68</div><div class="heatmap-cell h4">72</div>
+          <div class="heatmap-label">9 AM</div> <div class="heatmap-cell h3">56</div><div class="heatmap-cell h2">44</div><div class="heatmap-cell h3">52</div><div class="heatmap-cell h3">58</div><div class="heatmap-cell h2">42</div><div class="heatmap-cell h3">61</div><div class="heatmap-cell h3">55</div>
+          <div class="heatmap-label">12 PM</div><div class="heatmap-cell h1">18</div><div class="heatmap-cell h1">21</div><div class="heatmap-cell h1">19</div><div class="heatmap-cell h2">28</div><div class="heatmap-cell h1">22</div><div class="heatmap-cell h2">34</div><div class="heatmap-cell h2">38</div>
+          <div class="heatmap-label">3 PM</div> <div class="heatmap-cell h2">35</div><div class="heatmap-cell h2">32</div><div class="heatmap-cell h2">38</div><div class="heatmap-cell h2">30</div><div class="heatmap-cell h3">44</div><div class="heatmap-cell h4">65</div><div class="heatmap-cell h4">70</div>
+          <div class="heatmap-label">6 PM</div> <div class="heatmap-cell h4">89</div><div class="heatmap-cell h4">92</div><div class="heatmap-cell h4">85</div><div class="heatmap-cell h4">88</div><div class="heatmap-cell h4">95</div><div class="heatmap-cell h4">112</div><div class="heatmap-cell h4">118</div>
+          <div class="heatmap-label">9 PM</div> <div class="heatmap-cell h2">41</div><div class="heatmap-cell h2">38</div><div class="heatmap-cell h3">52</div><div class="heatmap-cell h2">44</div><div class="heatmap-cell h3">58</div><div class="heatmap-cell h3">62</div><div class="heatmap-cell h3">55</div>
+        </div>
+        <div style="margin-top:1rem;display:flex;gap:.5rem;align-items:center;font-size:.72rem;color:var(--gray-400);">
+          <span>Low</span>
+          <div style="width:16px;height:12px;border-radius:3px;" class="h0"></div>
+          <div style="width:16px;height:12px;border-radius:3px;" class="h1"></div>
+          <div style="width:16px;height:12px;border-radius:3px;" class="h2"></div>
+          <div style="width:16px;height:12px;border-radius:3px;" class="h3"></div>
+          <div style="width:16px;height:12px;border-radius:3px;" class="h4"></div>
+          <span>High</span>
+        </div>
+      </div>
+
+      <!-- Recent entries -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Recent Visitor Log</div><div class="card-subtitle">Latest gate entries</div></div>
+          <span class="card-action">View Full Log</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Type</th><th>Host Unit</th><th>Vehicle</th><th>Entry Time</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Raj Sharma</strong></td><td>Guest</td><td>A-402</td><td>DL 8C 4521</td><td>09:22 AM</td><td><span class="badge badge-green"><span class="badge-dot"></span>Inside</span></td></tr>
+              <tr><td><strong>Swiggy Delivery</strong></td><td>Delivery</td><td>C-308</td><td>Bike</td><td>09:18 AM</td><td><span class="badge badge-blue"><span class="badge-dot"></span>Left</span></td></tr>
+              <tr><td><strong>Priya Mehta</strong></td><td>Guest</td><td>B-201</td><td>UP 14 F 8823</td><td>09:15 AM</td><td><span class="badge badge-green"><span class="badge-dot"></span>Inside</span></td></tr>
+              <tr><td><strong>Plumber — Ramesh</strong></td><td>Service</td><td>A-506</td><td>–</td><td>09:10 AM</td><td><span class="badge badge-green"><span class="badge-dot"></span>Inside</span></td></tr>
+              <tr><td><strong>Amazon Delivery</strong></td><td>Delivery</td><td>D-112</td><td>Bike</td><td>09:05 AM</td><td><span class="badge badge-blue"><span class="badge-dot"></span>Left</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /visitors -->
+
+    <!-- ── STAFF & OPERATIONS PAGE ── -->
+    <div class="page" id="page-staff">
+      <div class="page-header">
+        <div>
+          <h1>Staff &amp; Operations</h1>
+          <p>Manage staff roster, shift schedules, and operational alerts</p>
+        </div>
+        <button class="btn-primary" style="border-radius:var(--radius);">+ Add Staff</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Total Staff</span><div class="kpi-icon" style="background:#eef2ff;">👷</div></div><div class="kpi-val">52</div><div class="kpi-delta delta-up">↑ 38 on duty now</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">On Leave Today</span><div class="kpi-icon" style="background:#fef2f2;">🏖️</div></div><div class="kpi-val">4</div><div class="kpi-delta delta-down">↑ 2 emergency leaves</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Pending Tasks</span><div class="kpi-icon" style="background:#fffbeb;">📋</div></div><div class="kpi-val">11</div><div class="kpi-delta delta-down">↑ 3 overdue</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Dept Coverage</span><div class="kpi-icon" style="background:#f0fdf4;">✅</div></div><div class="kpi-val">95%</div><div class="kpi-delta delta-up">↑ All zones covered</div></div>
+      </div>
+
+      <div class="alert alert-red">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div><strong>Alert:</strong> Lift technician overdue — Block C lift repair (Ticket #C-0415) was due by 9 AM. Please follow up immediately.</div>
+      </div>
+
+      <div class="chart-grid" style="margin-bottom:1.75rem;">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Staff by Department</div><div class="card-subtitle">Current distribution</div></div>
+          </div>
+          <div class="chart-wrap"><canvas id="staffChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Today's Operations Log</div><div class="card-subtitle">Real-time updates</div></div>
+          </div>
+          <ul class="timeline">
+            <li><div class="timeline-dot red"></div><div class="timeline-time">09:30 AM — ⚠️ Alert</div><div class="timeline-text"><strong>Block C lift</strong> repair overdue — escalate</div></li>
+            <li><div class="timeline-dot green"></div><div class="timeline-time">09:15 AM — ✓ Complete</div><div class="timeline-text"><strong>Garden sweeping</strong> — all 4 zones done</div></li>
+            <li><div class="timeline-dot green"></div><div class="timeline-time">09:10 AM — ✓ Complete</div><div class="timeline-text"><strong>Pool cleaning</strong> and chlorine check done</div></li>
+            <li><div class="timeline-dot amber"></div><div class="timeline-time">08:50 AM — 🔄 In Progress</div><div class="timeline-text"><strong>Water pump</strong> — routine inspection ongoing</div></li>
+            <li><div class="timeline-dot"></div><div class="timeline-time">08:30 AM — 📋 Assigned</div><div class="timeline-text"><strong>38 staff</strong> checked in, 2 absent</div></li>
+            <li><div class="timeline-dot green"></div><div class="timeline-time">08:00 AM — ✓ Complete</div><div class="timeline-text"><strong>Night shift</strong> handover completed</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Staff Directory -->
+      <div class="card" style="margin-bottom:1.75rem;">
+        <div class="card-header">
+          <div><div class="card-title">Staff Directory</div><div class="card-subtitle">52 total staff members</div></div>
+          <span class="card-action">View All</span>
+        </div>
+        <div class="cards-grid-3" style="margin-top:.5rem;">
+          <div class="staff-card">
+            <div class="staff-avatar">RK</div>
+            <div class="staff-info">
+              <h3>Ramesh Kumar</h3>
+              <div class="role">Head of Security</div>
+              <div class="staff-meta">
+                <span class="badge badge-green"><span class="badge-dot"></span>On Duty</span>
+                <span style="font-size:.72rem;color:var(--gray-400);">Main Gate</span>
+              </div>
+            </div>
+          </div>
+          <div class="staff-card">
+            <div class="staff-avatar" style="background:linear-gradient(135deg,#14b8a6,#0d9488);">PS</div>
+            <div class="staff-info">
+              <h3>Pradeep Singh</h3>
+              <div class="role">Maintenance Supervisor</div>
+              <div class="staff-meta">
+                <span class="badge badge-green"><span class="badge-dot"></span>On Duty</span>
+                <span style="font-size:.72rem;color:var(--gray-400);">All Blocks</span>
+              </div>
+            </div>
+          </div>
+          <div class="staff-card">
+            <div class="staff-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706);">SL</div>
+            <div class="staff-info">
+              <h3>Suresh Lal</h3>
+              <div class="role">Garden Supervisor</div>
+              <div class="staff-meta">
+                <span class="badge badge-green"><span class="badge-dot"></span>On Duty</span>
+                <span style="font-size:.72rem;color:var(--gray-400);">Garden Zone</span>
+              </div>
+            </div>
+          </div>
+          <div class="staff-card">
+            <div class="staff-avatar" style="background:linear-gradient(135deg,#ef4444,#dc2626);">AK</div>
+            <div class="staff-info">
+              <h3>Anil Kumar</h3>
+              <div class="role">Lift Technician</div>
+              <div class="staff-meta">
+                <span class="badge badge-red"><span class="badge-dot"></span>Overdue Task</span>
+                <span style="font-size:.72rem;color:var(--gray-400);">Block C</span>
+              </div>
+            </div>
+          </div>
+          <div class="staff-card">
+            <div class="staff-avatar" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">MD</div>
+            <div class="staff-info">
+              <h3>Mohan Das</h3>
+              <div class="role">Pool &amp; Sports Incharge</div>
+              <div class="staff-meta">
+                <span class="badge badge-green"><span class="badge-dot"></span>On Duty</span>
+                <span style="font-size:.72rem;color:var(--gray-400);">Pool Area</span>
+              </div>
+            </div>
+          </div>
+          <div class="staff-card">
+            <div class="staff-avatar" style="background:linear-gradient(135deg,#64748b,#475569);">KP</div>
+            <div class="staff-info">
+              <h3>Kavita Pandey</h3>
+              <div class="role">Admin &amp; Accounts</div>
+              <div class="staff-meta">
+                <span class="badge badge-amber"><span class="badge-dot"></span>Leave</span>
+                <span style="font-size:.72rem;color:var(--gray-400);">Returns Mar 23</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasks Table -->
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Pending Operations Tasks</div><div class="card-subtitle">11 open · 3 overdue</div></div>
+          <span class="card-action">+ Add Task</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Task</th><th>Assigned To</th><th>Zone</th><th>Due</th><th>Priority</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Repair Block C Lift</strong></td><td>Anil Kumar</td><td>Block C</td><td>9:00 AM Today</td><td><span class="badge badge-red"><span class="badge-dot"></span>High</span></td><td><span class="badge badge-red"><span class="badge-dot"></span>Overdue</span></td></tr>
+              <tr><td><strong>CCTV Camera Check — Gate 2</strong></td><td>Ramesh Kumar</td><td>Perimeter</td><td>12:00 PM Today</td><td><span class="badge badge-red"><span class="badge-dot"></span>High</span></td><td><span class="badge badge-amber"><span class="badge-dot"></span>In Progress</span></td></tr>
+              <tr><td><strong>Replace Water Filter — Block A</strong></td><td>Pradeep Singh</td><td>Block A</td><td>Mar 22</td><td><span class="badge badge-amber"><span class="badge-dot"></span>Med</span></td><td><span class="badge badge-blue"><span class="badge-dot"></span>Pending</span></td></tr>
+              <tr><td><strong>Pool pH Level Correction</strong></td><td>Mohan Das</td><td>Pool</td><td>Mar 22</td><td><span class="badge badge-amber"><span class="badge-dot"></span>Med</span></td><td><span class="badge badge-amber"><span class="badge-dot"></span>In Progress</span></td></tr>
+              <tr><td><strong>Repainting Parking Lines — B2</strong></td><td>Garden Team</td><td>Parking</td><td>Mar 24</td><td><span class="badge badge-gray"><span class="badge-dot"></span>Low</span></td><td><span class="badge badge-blue"><span class="badge-dot"></span>Pending</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /staff -->
+
+    <!-- ── FINANCE PAGE ── -->
+    <div class="page" id="page-finance">
+      <div class="page-header">
+        <div>
+          <h1>Finance &amp; Dues</h1>
+          <p>Maintenance collections, arrears, and fund management</p>
+        </div>
+        <button class="btn-primary" style="border-radius:var(--radius);">Generate Report</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Total Collected Q1</span><div class="kpi-icon" style="background:#f0fdf4;">💰</div></div><div class="kpi-val">₹18.4L</div><div class="kpi-delta delta-up">↑ 8.2% vs Q4 2025</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Pending Dues</span><div class="kpi-icon" style="background:#fef2f2;">⚠️</div></div><div class="kpi-val">₹3.2L</div><div class="kpi-delta delta-down">↓ 124 units pending</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Corpus Fund</span><div class="kpi-icon" style="background:#eef2ff;">🏦</div></div><div class="kpi-val">₹42.8L</div><div class="kpi-delta delta-up">↑ Healthy reserve</div></div>
+        <div class="kpi-card"><div class="kpi-header"><span class="kpi-label">Expenses Q1</span><div class="kpi-icon" style="background:#fffbeb;">📊</div></div><div class="kpi-val">₹11.6L</div><div class="kpi-delta delta-up">↑ Within budget</div></div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Collection vs Expenditure</div><div class="card-subtitle">Monthly comparison — 2026</div></div>
+          </div>
+          <div class="chart-wrap"><canvas id="financeChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Expenditure Breakdown</div><div class="card-subtitle">Q1 2026</div></div>
+          </div>
+          <div class="chart-wrap"><canvas id="expenseChart"></canvas></div>
+          <div class="donut-legend">
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#6366f1"></div>Staff Salaries (₹5.2L)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#14b8a6"></div>Maintenance (₹2.8L)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#f59e0b"></div>Utilities (₹1.9L)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#ef4444"></div>Security (₹1.2L)</div>
+            <div class="donut-legend-item"><div class="donut-legend-dot" style="background:#94a3b8"></div>Others (₹0.5L)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Defaulters — Pending Dues</div><div class="card-subtitle">Top 5 by amount</div></div>
+          <span class="card-action">Send Reminders</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Unit</th><th>Owner Name</th><th>Months Pending</th><th>Amount Due</th><th>Last Payment</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><strong>B-804</strong></td><td>Mr. A. Verma</td><td>5 months</td><td><strong>₹22,500</strong></td><td>Oct 2025</td><td><span class="card-action">Send Notice</span></td></tr>
+              <tr><td><strong>C-302</strong></td><td>Mrs. P. Yadav</td><td>4 months</td><td><strong>₹18,000</strong></td><td>Nov 2025</td><td><span class="card-action">Send Notice</span></td></tr>
+              <tr><td><strong>A-1101</strong></td><td>Mr. S. Kapoor</td><td>3 months</td><td><strong>₹13,500</strong></td><td>Dec 2025</td><td><span class="card-action">Send Notice</span></td></tr>
+              <tr><td><strong>D-405</strong></td><td>Ms. R. Joshi</td><td>2 months</td><td><strong>₹9,000</strong></td><td>Jan 2026</td><td><span class="card-action">Send Notice</span></td></tr>
+              <tr><td><strong>B-208</strong></td><td>Mr. K. Gupta</td><td>1 month</td><td><strong>₹4,500</strong></td><td>Feb 2026</td><td><span class="card-action">Send Reminder</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /finance -->
+
+    <!-- ── NOTICES ADMIN PAGE ── -->
+    <div class="page" id="page-notices">
+      <div class="page-header">
+        <div>
+          <h1>Notices &amp; Alerts</h1>
+          <p>Manage community communications, alerts, and circulars</p>
+        </div>
+        <button class="btn-primary" style="border-radius:var(--radius);">+ Create Notice</button>
+      </div>
+
+      <div class="alert alert-indigo">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>6 active notices are currently published. 2 require action before March 31, 2026.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Published Notices</div><div class="card-subtitle">6 active · March 2026</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Title</th><th>Category</th><th>Posted</th><th>Audience</th><th>Views</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Water Supply Shutdown — Mar 22</strong></td><td>Maintenance</td><td>Mar 20, 2026</td><td>Block C, D</td><td>342</td><td><span class="badge badge-red"><span class="badge-dot"></span>Urgent</span></td></tr>
+              <tr><td><strong>Holi Celebration 2026</strong></td><td>Event</td><td>Mar 18, 2026</td><td>All Residents</td><td>891</td><td><span class="badge badge-green"><span class="badge-dot"></span>Active</span></td></tr>
+              <tr><td><strong>Q1 Maintenance Dues — Due Mar 31</strong></td><td>Finance</td><td>Mar 15, 2026</td><td>All Units</td><td>1,024</td><td><span class="badge badge-amber"><span class="badge-dot"></span>Action Reqd</span></td></tr>
+              <tr><td><strong>Annual General Meeting — Apr 5</strong></td><td>Governance</td><td>Mar 10, 2026</td><td>All Residents</td><td>654</td><td><span class="badge badge-indigo"><span class="badge-dot"></span>Published</span></td></tr>
+              <tr><td><strong>New Security Protocol — ANPR</strong></td><td>Security</td><td>Mar 8, 2026</td><td>All Residents</td><td>782</td><td><span class="badge badge-indigo"><span class="badge-dot"></span>Published</span></td></tr>
+              <tr><td><strong>Free Health Camp — Mar 28</strong></td><td>Health</td><td>Mar 5, 2026</td><td>All Residents</td><td>423</td><td><span class="badge badge-green"><span class="badge-dot"></span>Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /notices -->
+
+  </main>
+</div><!-- /.app-shell -->
+</div><!-- /#admin-app -->
+
+<script>
+// ── Navigation ──
+let currentSlide = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const dots = document.querySelectorAll('.hero-dot');
+
+function goSlide(n) {
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = n;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+
+setInterval(() => goSlide((currentSlide + 1) % slides.length), 4500);
+
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function openAdmin() {
+  document.getElementById('public-site').style.display = 'none';
+  document.getElementById('admin-app').style.display = 'block';
+  initCharts();
+}
+
+function closeAdmin() {
+  document.getElementById('admin-app').style.display = 'none';
+  document.getElementById('public-site').style.display = 'block';
+}
+
+// ── Admin Page Switching ──
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  const titles = {
+    dashboard: 'Dashboard', attractions: 'Attractions & Activities',
+    visitors: 'Visitor Analytics', staff: 'Staff & Operations',
+    finance: 'Finance & Dues', notices: 'Notices & Alerts'
+  };
+  document.getElementById('topbar-title').textContent = titles[id] || 'Dashboard';
+  return false;
+}
+
+// ── Charts ──
+let chartsInit = false;
+function initCharts() {
+  if (chartsInit) return;
+  chartsInit = true;
+
+  const indigo = '#6366f1', teal = '#14b8a6', amber = '#f59e0b',
+        red = '#ef4444', gray = '#94a3b8', green = '#22c55e',
+        indigoLight = 'rgba(99,102,241,0.12)', tealLight = 'rgba(20,184,166,0.12)';
+
+  const gridColor = 'rgba(0,0,0,0.04)';
+  const tickColor = '#9ca3af';
+
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } } },
+      y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 11 } } }
+    }
+  };
+
+  // Revenue Chart
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'Revenue (₹L)',
+        data: [5.8, 6.2, 6.4, 0, 0, 0],
+        backgroundColor: [indigo, indigo, indigo, indigoLight, indigoLight, indigoLight],
+        borderRadius: 8, borderSkipped: false
+      }]
+    },
+    options: { ...baseOpts, plugins: { legend: { display: false } } }
+  });
+
+  // Complaint Donut
+  new Chart(document.getElementById('complaintChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Electrical', 'Plumbing', 'Parking', 'Security', 'Others'],
+      datasets: [{ data: [8, 6, 5, 3, 2], backgroundColor: [indigo, teal, amber, red, gray], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
+  });
+
+  // Visitor Chart
+  new Chart(document.getElementById('visitorChart'), {
+    type: 'line',
+    data: {
+      labels: Array.from({length: 30}, (_,i) => `Mar ${i+1}`),
+      datasets: [{
+        label: 'Visitors', fill: true,
+        data: [280,310,295,320,340,380,420,390,310,298,315,340,360,395,410,388,342,365,380,420,445,390,328,355,370,398,412,388,350,342],
+        borderColor: indigo, backgroundColor: indigoLight,
+        tension: 0.4, pointRadius: 2, borderWidth: 2
+      }]
+    },
+    options: baseOpts
+  });
+
+  // Entry Type Donut
+  new Chart(document.getElementById('entryTypeChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Residents', 'Guests', 'Delivery', 'Service'],
+      datasets: [{ data: [1248, 187, 54, 101], backgroundColor: [indigo, teal, amber, gray], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
+  });
+
+  // Staff Bar
+  new Chart(document.getElementById('staffChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Security', 'Maintenance', 'Housekeeping', 'Garden', 'Pool/Sports', 'Admin'],
+      datasets: [{
+        label: 'Staff Count', data: [16, 10, 8, 7, 5, 6],
+        backgroundColor: [indigo, teal, amber, green, red, gray],
+        borderRadius: 8, borderSkipped: false
+      }]
+    },
+    options: { ...baseOpts, indexAxis: 'y', plugins: { legend: { display: false } } }
+  });
+
+  // Finance Chart
+  new Chart(document.getElementById('financeChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar'],
+      datasets: [
+        { label: 'Collected', data: [5.8, 6.2, 6.4], backgroundColor: indigo, borderRadius: 8, borderSkipped: false },
+        { label: 'Expenses',  data: [3.8, 3.9, 3.9], backgroundColor: teal, borderRadius: 8, borderSkipped: false }
+      ]
+    },
+    options: { ...baseOpts, plugins: { legend: { display: true, labels: { font: { size: 11 }, color: tickColor } } } }
+  });
+
+  // Expense Donut
+  new Chart(document.getElementById('expenseChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Salaries', 'Maintenance', 'Utilities', 'Security', 'Others'],
+      datasets: [{ data: [5.2, 2.8, 1.9, 1.2, 0.5], backgroundColor: [indigo, teal, amber, red, gray], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
+  });
+}
+</script>
+</body>
+</html>
